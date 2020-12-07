@@ -7,5 +7,6 @@ public class ShowCustomerCatalog {
     private AddingMoviesInCatalog addingMoviesInCatalog;
     private DeletingMoviesFromCatalog deletingMoviesFromCatalog;
 
-    public ShowCustomerCatalog(){}
+    public ShowCustomerCatalog() {
+    }
 }

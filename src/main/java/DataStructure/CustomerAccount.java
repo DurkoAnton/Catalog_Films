@@ -8,7 +8,7 @@ public class CustomerAccount {
 
     private String login;
     private String password;
-    private ArrayList<FilmExt> customerMoviesList;
+    private ArrayList<Integer> customerMoviesList;
     private boolean authorizeStatus;
 
     public CustomerAccount() {
@@ -21,6 +21,9 @@ public class CustomerAccount {
         customerMoviesList = new ArrayList<>();
     }
 
+    public ArrayList<Integer> getCustomerMoviesList(){
+        return customerMoviesList;
+    }
     public void setUserLogin(String userLogin) {
 
     }

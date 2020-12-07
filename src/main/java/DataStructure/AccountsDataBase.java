@@ -1,22 +1,21 @@
 package DataStructure;
 
-import DataStructure.CustomerAccount;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class AccountsDataBase implements Serializable {
+public class AccountsDataBase implements Serializable{
 
-    private static ArrayList<CustomerAccount> customerAccountsDataBase;
+    private  ArrayList<CustomerAccount> customerAccountsDataBase;
+    private AccountsDataBaseIterator accountsDataBaseIterator;
 
     public AccountsDataBase() {
         customerAccountsDataBase = new ArrayList<>();
+        accountsDataBaseIterator = new AccountsDataBaseIterator(this.customerAccountsDataBase);
     }
 
     public boolean addNewUser(CustomerAccount user) {
         if (!checkIsAvailableThisLogin(user)) {
             customerAccountsDataBase.add(user);
-            System.out.println(customerAccountsDataBase.size());
             return true;
         } else
             return false;
@@ -31,17 +30,29 @@ public class AccountsDataBase implements Serializable {
     }
 
     public boolean checkIsAvailableThisLogin(CustomerAccount user) {
-        for (int i = 0; i < customerAccountsDataBase.size(); i++)
-            if (customerAccountsDataBase.get(i).getUserLogin().equals(user.getUserLogin()))
+        accountsDataBaseIterator.resetIndex();
+        while(accountsDataBaseIterator.hasNext()){
+            if(accountsDataBaseIterator.nextObject().getUserLogin().equals(user.getUserLogin()))
                 return true;
+        }
         return false;
     }
 
     public boolean checkIsAvailableThisUser(CustomerAccount user) {
-        for (int i = 0; i < customerAccountsDataBase.size(); i++)
-            if (customerAccountsDataBase.get(i).getUserLogin().equals(user.getUserLogin()))
+        accountsDataBaseIterator.resetIndex();
+        while(accountsDataBaseIterator.hasNext()){
+            if(accountsDataBaseIterator.nextObject().getUserLogin().equals(user.getUserLogin()))
                 return true;
+        }
         return false;
     }
 
+    public CustomerAccount getUserObject(String userLogin){
+        accountsDataBaseIterator.resetIndex();
+        while(accountsDataBaseIterator.hasNext()){
+            if(accountsDataBaseIterator.nextObject().getUserLogin().equals(userLogin))
+                return accountsDataBaseIterator.currentObject();
+        }
+        return null;
+    }
 }

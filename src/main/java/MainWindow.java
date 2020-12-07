@@ -10,11 +10,10 @@ public class MainWindow extends Application {
 
     @Override
     public void start(Stage stage) throws IOException, ClassNotFoundException {
-        Parent root = FXMLLoader.load(getClass().getResource("StartWindow.fxml"));
-        Scene scene = new Scene(root);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("StartWindow.fxml"));
+        Scene scene = new Scene(loader.load());
         stage.setScene(scene);
         stage.show();
-        StartWindowController start = new StartWindowController(stage);
     }
 
     public static void main(String[] args) {

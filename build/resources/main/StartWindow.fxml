@@ -28,6 +28,9 @@
              <Label fx:id="descriptionLabel" alignment="TOP_LEFT" layoutX="503.0" layoutY="481.0" prefHeight="191.0" prefWidth="584.0" text="Description" textAlignment="JUSTIFY" wrapText="true" />
              <Label fx:id="budgetLabel" layoutX="506.0" layoutY="351.0" prefHeight="17.0" prefWidth="469.0" text="Budget" />
              <Label fx:id="seriesInfoLabel" layoutX="503.0" layoutY="400.0" prefHeight="17.0" prefWidth="381.0" text="Series info" />
+             <Button fx:id="addMovieButton" layoutX="503.0" layoutY="432.0" mnemonicParsing="false" text="AddToCatalog" onAction="#addMovieInUserCatalog" />
+             <Label fx:id="idLabel" layoutX="503.0" layoutY="181.0" text="Id:"  />
+
          </children>
       </AnchorPane>
       <VBox layoutX="2.0" layoutY="42.0" prefHeight="360.0" prefWidth="126.0">
@@ -74,5 +77,7 @@
        <Button fx:id="returnToBackButton" onAction="#returnBackScene" layoutX="128.0" layoutY="23.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Назад" visible="false" />
       <Button fx:id="authorizeInSystemButton" layoutX="872.0" layoutY="23.0" mnemonicParsing="false" onAction="#doAutorize" text="Actions.AuthorizationInSystem" />
       <Button fx:id="showCatalogWindow" layoutX="1012.0" layoutY="23.0" mnemonicParsing="false" text="Catalog" onAction="#showCatalog"/>
+       <Label layoutX="198.0" layoutY="120.0" text="Movies:" visible="false" />
+       <Label layoutX="198.0" layoutY="137.0" text="Watched:" visible="false" />
    </children>
 </AnchorPane>

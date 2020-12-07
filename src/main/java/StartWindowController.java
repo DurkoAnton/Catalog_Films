@@ -1,11 +1,14 @@
 import Actions.AuthorizationInSystem;
 import Actions.SearchMovies;
+import Actions.WorkWithUserCatalog;
 import DataStructure.AccountsDataBase;
 import com.truedev.kinoposk.api.model.film.FilmExt;
 import com.truedev.kinoposk.api.model.navigator.NavigatorExt;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -32,6 +35,10 @@ public class StartWindowController {
     public Button returnToBackButton;
     @FXML
     public Button authorizeInSystemButton;
+    @FXML
+    public Label idLabel;
+    @FXML
+    public Button addMovieButton;
     @FXML
     private TextField searchindString;
     @FXML
@@ -64,9 +71,9 @@ public class StartWindowController {
     private Button getPremiersButton;
     @FXML
     private ScrollPane scroll;
-
     @FXML
     private ImageView imageViewForHandle;
+
     private SearchMovies searchMovies;
     private Stage stage;
     @FXML
@@ -75,7 +82,6 @@ public class StartWindowController {
     private TextField ratingFrom;
     @FXML
     private TextField ratingTo;
-
     @FXML
     private TextField yearFrom;
     @FXML
@@ -83,17 +89,28 @@ public class StartWindowController {
     @FXML
     private AnchorPane showFilmPane;
 
-    private static AuthorizationInSystem authorizeInSystem;
+    private WorkWithUserCatalog workWithUserCatalog;
 
-    public StartWindowController() throws IOException, ClassNotFoundException {
+    private AuthorizationInSystem authorizeInSystem;
+
+    public StartWindowController() throws IOException {
         searchMovies = new SearchMovies(null);
-        authorizeInSystem = new AuthorizationInSystem(stage);
+        initAuthorizationController();
+        workWithUserCatalog = new WorkWithUserCatalog();
+    }
 
+    public void initAuthorizationController() throws IOException {
+        FXMLLoader l = new FXMLLoader(getClass().getResource("AuthorizeWindow.fxml"));
+        Stage st = new Stage();
+        Scene scene = new Scene(l.load());
+        st.setScene(scene);
+        AuthorizationInSystem au = (AuthorizationInSystem) l.getController();
+        this.authorizeInSystem = au;
+        au.setStage(st);
     }
 
     public StartWindowController(Stage stage) throws IOException, ClassNotFoundException {
         this.stage = stage;
-        // readDataBaseFromFile();
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
@@ -104,19 +121,43 @@ public class StartWindowController {
                 }
             }
         });
-        searchMovies = new SearchMovies(this.stage);
     }
 
     @FXML
-    public void doAutorize() {
-     //   System.out.println(authorizeInSystem.getDataBase().a);
-        authorizeInSystem.openAutorizeShow();
+    public void doAutorize() throws IOException {
+        this.authorizeInSystem.openAutorizeShow();
     }
 
+    public void clearFlowPane() {
+        int countChildrenElements = flows.getChildren().size();
+        for (int i = 0; i < countChildrenElements; i++) {
+            flows.getChildren().remove(0);
+        }
+    }
+
+    public void showErrorMessage() {
+    }
+
+    @FXML
     public void showCatalog() {
-
+        System.out.println("zaq");
+        FilmExt filmInfo;
         if (authorizeInSystem.getStatus()) {
+            flows.setVisible(true);
+            scroll.setVisible(true);
+            clearFlowPane();
+            workWithUserCatalog.setCurrentCustomerAccount(authorizeInSystem.getCurrentUserInSystem());
+            for (int i = 0; i < authorizeInSystem.getCurrentUserInSystem().getCustomerMoviesList().size(); i++) {
+                System.out.println("qqq" + authorizeInSystem.getCurrentUserInSystem().getCustomerMoviesList().get(i));
+                filmInfo = searchMovies.getInformationAboutMovie(authorizeInSystem.getCurrentUserInSystem().getCustomerMoviesList().get(i));
+                Image im = new Image(filmInfo.getData().getBigPosterUrl(), 210, 300, false, false);
+                ImageView imageView = new ImageView(im);
+                Hyperlink nameLink = new Hyperlink(filmInfo.getData().getNameRU());
+                VBox v = new VBox(imageView, nameLink);
+                flows.getChildren().add(v);
+            }
 
+//            System.out.println("system"+authorizeInSystem.getCurrentUserInSystem().getUserLogin());
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
@@ -179,9 +220,7 @@ public class StartWindowController {
         }
     }
 
-    @FXML
-    public void doSearchMovies() {
-
+    public void setParamsForSearch() {
         searchMovies.setKeywords(searchindString.getText());
 
         searchMovies.setCountryId(getCountryId((String) countryIdsBox.getValue()));
@@ -190,7 +229,11 @@ public class StartWindowController {
         searchMovies.setRatingTo(Byte.parseByte(ratingTo.getText()));
         searchMovies.setYearFrom(Integer.parseInt(yearFrom.getText()));
         searchMovies.setYearTo(Integer.parseInt(yearTo.getText()));
+    }
 
+    @FXML
+    public void doSearchMovies() {
+        setParamsForSearch();
         NavigatorExt filmInfo;
 
         getPremiersButton.setVisible(false);
@@ -215,21 +258,12 @@ public class StartWindowController {
                 nameLink.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent actionEvent) {
+
                         showFilmPane.setVisible(true);
                         scroll.setVisible(false);
                         FilmExt film = searchMovies.getInformationAboutMovie(finalFilmInfo.getData().getItems().get(finalI).getId());
-                        nameLabel.setText(nameLabel.getText() + ": " + film.getData().getNameEN());
-                        ageRatingLabel.setText(ageRatingLabel.getText() + ": " + film.getData().getRatingAgeLimits());
-                        countriesLabel.setText(countriesLabel.getText() + ": " + film.getData().getCountry());
-                        sloganLabel.setText(sloganLabel.getText() + ": " + film.getData().getSlogan());
-                        movieLengthLabel.setText(movieLengthLabel.getText() + ": " + film.getData().getFilmLength());
-                        genreLabel.setText(genreLabel.getText() + ": " + film.getData().getGenre());
-                        budgetLabel.setText(budgetLabel.getText() + ":+ " + film.getData().getBudgetData().getBudget());
-                        descriptionLabel.setText(descriptionLabel.getText() + ":+ " + film.getData().getDescription());
-                        seriesInfoLabel.setText(seriesInfoLabel.getText() + ":+ " + film.getData().getSeriesInfo());
-                        Image im = new Image(film.getData().getBigPosterUrl());
-                        imageViewForHandle.setImage(im);
-                        searchMovies.getInformationAboutMovieStaff(finalFilmInfo.getData().getItems().get(finalI).getId());
+                        showInformationAboutMovie(film);
+                        // searchMovies.getInformationAboutMovieStaff(finalFilmInfo.getData().getItems().get(finalI).getId());
                     }
                 });
                 VBox v = new VBox(imageView, nameLink);
@@ -251,14 +285,14 @@ public class StartWindowController {
     }
 
     @FXML
-    public void send() throws AddressException {
+    public void sendEmail() throws AddressException {
 
         String to = "customerlogin6@gmail.com";
 
         // Sender's email ID needs to be mentioned
         String from = "anton.durko.work@gmail.com";
         final String username = "anton.durko.work";//change accordingly
-        final String password = "rasko123";//change accordingly
+        final String password = "";//change accordingly
 
         // Assuming you are sending email through relay.jangosmtp.net
         String host = "relay.jangosmtp.net";
@@ -316,10 +350,38 @@ public class StartWindowController {
     }
 
     public void readDataBaseFromFile() throws IOException, ClassNotFoundException {
-
         FileInputStream fis = new FileInputStream(new File("D:\\untitled\\src\\main\\resources\\CustomerDataBase"));
         ObjectInputStream ois = new ObjectInputStream(fis);
         AccountsDataBase data = (AccountsDataBase) ois.readObject();
         ois.close();
+    }
+
+    public void showInformationAboutMovie(FilmExt film) {
+        nameLabel.setText(nameLabel.getText() + ": " + film.getData().getNameEN());
+        ageRatingLabel.setText(ageRatingLabel.getText() + ": " + film.getData().getRatingAgeLimits());
+        countriesLabel.setText(countriesLabel.getText() + ": " + film.getData().getCountry());
+        sloganLabel.setText(sloganLabel.getText() + ": " + film.getData().getSlogan());
+        movieLengthLabel.setText(movieLengthLabel.getText() + ": " + film.getData().getFilmLength());
+        genreLabel.setText(genreLabel.getText() + ": " + film.getData().getGenre());
+        budgetLabel.setText(budgetLabel.getText() + ": " + film.getData().getBudgetData().getBudget());
+        descriptionLabel.setText(descriptionLabel.getText() + ": " + film.getData().getDescription());
+        seriesInfoLabel.setText(seriesInfoLabel.getText() + ": " + film.getData().getSeriesInfo());
+        idLabel.setText(idLabel.getText() + " " + film.getData().getFilmID());
+        Image im = new Image(film.getData().getBigPosterUrl());
+        imageViewForHandle.setImage(im);
+        if (authorizeInSystem.getStatus())
+            addMovieButton.setDisable(false);
+        else
+            addMovieButton.setDisable(true);
+    }
+
+    @FXML
+    public void addMovieInUserCatalog() {
+        if (authorizeInSystem.getStatus()) {
+            workWithUserCatalog.setCurrentCustomerAccount(authorizeInSystem.getCurrentUserInSystem());
+        }
+        workWithUserCatalog.getAddingMoviesInCatalog().
+                addNewMovieInCatalog(workWithUserCatalog.getCurrentCustomerAccount(),
+                        Integer.parseInt(idLabel.getText().substring(4, idLabel.getText().length())));
     }
 }
