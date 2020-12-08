@@ -12,7 +12,6 @@ import java.util.List;
 
 public class SearchMovies {
 
-    private Stage stage;
     private String keywords;
     private byte genreId;
     private byte countryId;
@@ -42,7 +41,8 @@ public class SearchMovies {
     }
 
     public SearchMovies(Stage stage) {
-        this.stage = stage;
+
+        //this.stage = stage;
     }
 
     public String getKeywords() {

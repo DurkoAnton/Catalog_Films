@@ -29,6 +29,7 @@ public class AccountsDataBase implements Serializable{
         this.customerAccountsDataBase = customerAccountsDataBase;
     }
 
+    public AccountsDataBaseIterator getIterator(){return accountsDataBaseIterator;}
     public boolean checkIsAvailableThisLogin(CustomerAccount user) {
         accountsDataBaseIterator.resetIndex();
         while(accountsDataBaseIterator.hasNext()){

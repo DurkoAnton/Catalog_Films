@@ -32,8 +32,8 @@ public class WorkWithUserCatalog {
     }
 
     public void showUserCatalog() {
-        for (int i = 0; i < currentCustomerAccount.getCustomerMoviesList().size(); i++) {
+       /* for (int i = 0; i < currentCustomerAccount.getCustomerMoviesList().size(); i++) {
 
-        }
+        }*/
     }
 }

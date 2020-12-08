@@ -17,19 +17,31 @@
    <children>
       <AnchorPane fx:id="showFilmPane" prefHeight="800.0" prefWidth="1280.0" visible="false">
          <children>
-             <Label fx:id="genreLabel" layoutX="503.0" layoutY="374.0" prefHeight="17.0" prefWidth="381.0" text="Genre" />
+             <Label fx:id="genreLabel" layoutX="598.0" layoutY="379.0" prefHeight="17.0" prefWidth="381.0" text="" />
              <ImageView fx:id="imageViewForHandle" fitHeight="400.0" fitWidth="285.0" layoutX="186.0" layoutY="151.0" pickOnBounds="true" preserveRatio="true" />
-             <Label fx:id="movieLengthLabel" layoutX="503.0" layoutY="233.0" prefHeight="17.0" prefWidth="462.0" text="Length" />
-             <Label fx:id="premierDataLabel" layoutX="503.0" layoutY="209.0" prefHeight="10.0" prefWidth="517.0" text="Premier data" />
-             <Label fx:id="nameLabel" layoutX="503.0" layoutY="185.0" prefHeight="17.0" prefWidth="412.0" text="Name" />
-             <Label fx:id="ageRatingLabel" layoutX="506.0" layoutY="263.0" prefHeight="17.0" prefWidth="469.0" text="Age rating" />
-             <Label fx:id="countriesLabel" layoutX="507.0" layoutY="293.0" prefHeight="17.0" prefWidth="487.0" text="Countries" />
-             <Label fx:id="sloganLabel" layoutX="508.0" layoutY="321.0" prefHeight="17.0" prefWidth="469.0" text="Slogan" />
-             <Label fx:id="descriptionLabel" alignment="TOP_LEFT" layoutX="503.0" layoutY="481.0" prefHeight="191.0" prefWidth="584.0" text="Description" textAlignment="JUSTIFY" wrapText="true" />
-             <Label fx:id="budgetLabel" layoutX="506.0" layoutY="351.0" prefHeight="17.0" prefWidth="469.0" text="Budget" />
-             <Label fx:id="seriesInfoLabel" layoutX="503.0" layoutY="400.0" prefHeight="17.0" prefWidth="381.0" text="Series info" />
-             <Button fx:id="addMovieButton" layoutX="503.0" layoutY="432.0" mnemonicParsing="false" text="AddToCatalog" onAction="#addMovieInUserCatalog" />
-             <Label fx:id="idLabel" layoutX="503.0" layoutY="181.0" text="Id:"  />
+             <Label fx:id="movieLengthLabel" layoutX="598.0" layoutY="238.0" prefHeight="17.0" prefWidth="462.0" text="" />
+             <Label fx:id="premierDataLabel" layoutX="598.0" layoutY="214.0" prefHeight="10.0" prefWidth="517.0" text="" />
+             <Label fx:id="nameLabel" layoutX="598.0" layoutY="162.0" prefHeight="17.0" prefWidth="412.0" text="" />
+             <Label fx:id="ageRatingLabel" layoutX="601.0" layoutY="268.0" prefHeight="17.0" prefWidth="469.0" text="" />
+             <Label fx:id="countriesLabel" layoutX="602.0" layoutY="298.0" prefHeight="17.0" prefWidth="487.0" text="" />
+             <Label fx:id="sloganLabel" layoutX="603.0" layoutY="326.0" prefHeight="17.0" prefWidth="469.0" text="" />
+             <Label fx:id="descriptionLabel" alignment="TOP_LEFT" layoutX="600.0" layoutY="481.0" prefHeight="191.0" prefWidth="487.0" text="" textAlignment="JUSTIFY" wrapText="true" />
+             <Label fx:id="budgetLabel" layoutX="601.0" layoutY="356.0" prefHeight="17.0" prefWidth="469.0" text="" />
+             <Label fx:id="seriesInfoLabel" layoutX="598.0" layoutY="405.0" prefHeight="17.0" prefWidth="381.0" text="" />
+             <Button fx:id="addMovieButton" layoutX="503.0" layoutY="432.0" mnemonicParsing="false" text="AddMovie" onAction="#addMovieInUserCatalog"/>
+             <Label layoutX="598.0" layoutY="186.0" text="Id:" />
+             <Button fx:id="deleteMovieButton" layoutX="611.0" layoutY="432.0" mnemonicParsing="false" text="DeleteFromCatalog" onAction="#deleteMovieFromUserCatalog"/>
+             <Label fx:id="genreLabel1" layoutX="503.0" layoutY="379.0" prefHeight="17.0" prefWidth="381.0" text="Genre" />
+             <Label fx:id="movieLengthLabel1" layoutX="503.0" layoutY="239.0" prefHeight="17.0" prefWidth="462.0" text="Length" />
+             <Label fx:id="premierDataLabel1" layoutX="503.0" layoutY="215.0" prefHeight="10.0" prefWidth="517.0" text="Premier data" />
+             <Label fx:id="nameLabel1" layoutX="503.0" layoutY="162.0" prefHeight="17.0" prefWidth="412.0" text="Name" />
+             <Label fx:id="ageRatingLabel1" layoutX="506.0" layoutY="269.0" prefHeight="17.0" prefWidth="469.0" text="Age rating" />
+             <Label fx:id="countriesLabel1" layoutX="507.0" layoutY="299.0" prefHeight="17.0" prefWidth="487.0" text="Countries" />
+             <Label fx:id="sloganLabel1" layoutX="508.0" layoutY="327.0" prefHeight="17.0" prefWidth="469.0" text="Slogan" />
+             <Label fx:id="budgetLabel1" layoutX="506.0" layoutY="357.0" prefHeight="17.0" prefWidth="469.0" text="Budget" />
+             <Label fx:id="seriesInfoLabel1" layoutX="503.0" layoutY="406.0" prefHeight="17.0" prefWidth="381.0" text="Series info" />
+             <Label fx:id="idLabel" layoutX="503.0" layoutY="187.0" text="Id:" />
+             <Label  layoutX="503.0" layoutY="481.0" prefHeight="17.0" prefWidth="381.0" text="Description" />
 
          </children>
       </AnchorPane>
@@ -63,7 +75,6 @@
             <TextField fx:id="yearFrom"/>
             <Label text="Label" />
             <TextField fx:id="yearTo"/>
-            <ComboBox editable="true" prefWidth="150.0" promptText="df" />
          </children>
       </VBox>
       <Button layoutX="632.0" layoutY="23.0" mnemonicParsing="false" onAction="#doSearchMovies" text="Search" />
@@ -71,7 +82,7 @@
       <Button fx:id="getPremiersButton" layoutX="502.0" layoutY="289.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="93.0" text="124234" />
       <ScrollPane fx:id="scroll" layoutX="138.0" layoutY="86.0" prefHeight="701.0" prefWidth="1126.0" visible="false">
          <content>
-            <FlowPane fx:id="flows" prefHeight="682.0" prefWidth="1118.0" visible="false" />
+            <FlowPane fx:id="flowPaneForShowListMovies" prefHeight="682.0" prefWidth="1118.0" visible="false" />
          </content>
       </ScrollPane>
        <Button fx:id="returnToBackButton" onAction="#returnBackScene" layoutX="128.0" layoutY="23.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Назад" visible="false" />

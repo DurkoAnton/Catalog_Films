@@ -2,6 +2,7 @@ import Actions.AuthorizationInSystem;
 import Actions.SearchMovies;
 import Actions.WorkWithUserCatalog;
 import DataStructure.AccountsDataBase;
+import DataStructure.CustomerAccount;
 import com.truedev.kinoposk.api.model.film.FilmExt;
 import com.truedev.kinoposk.api.model.navigator.NavigatorExt;
 import javafx.event.ActionEvent;
@@ -27,6 +28,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Properties;
 
 public class StartWindowController {
@@ -39,6 +41,8 @@ public class StartWindowController {
     public Label idLabel;
     @FXML
     public Button addMovieButton;
+    @FXML
+    public Button deleteMovieButton;
     @FXML
     private TextField searchindString;
     @FXML
@@ -66,7 +70,7 @@ public class StartWindowController {
     @FXML
     private Label seriesInfoLabel;
     @FXML
-    private FlowPane flows;
+    private FlowPane flowPaneForShowListMovies;
     @FXML
     private Button getPremiersButton;
     @FXML
@@ -91,27 +95,18 @@ public class StartWindowController {
 
     private WorkWithUserCatalog workWithUserCatalog;
 
-    private AuthorizationInSystem authorizeInSystem;
+    private AuthorizationInSystem authorizationInSystem;
 
-    public StartWindowController() throws IOException {
+    public StartWindowController() throws IOException, ClassNotFoundException {
         searchMovies = new SearchMovies(null);
         initAuthorizationController();
+       // readDataBaseFromFile();
         workWithUserCatalog = new WorkWithUserCatalog();
     }
 
-    public void initAuthorizationController() throws IOException {
-        FXMLLoader l = new FXMLLoader(getClass().getResource("AuthorizeWindow.fxml"));
-        Stage st = new Stage();
-        Scene scene = new Scene(l.load());
-        st.setScene(scene);
-        AuthorizationInSystem au = (AuthorizationInSystem) l.getController();
-        this.authorizeInSystem = au;
-        au.setStage(st);
-    }
-
-    public StartWindowController(Stage stage) throws IOException, ClassNotFoundException {
+    public void setStage(Stage stage) {
         this.stage = stage;
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+        this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
                 try {
@@ -123,15 +118,26 @@ public class StartWindowController {
         });
     }
 
+    public void initAuthorizationController() throws IOException {
+        FXMLLoader l = new FXMLLoader(getClass().getResource("AuthorizeWindow.fxml"));
+        Stage st = new Stage();
+        Scene scene = new Scene(l.load());
+        st.setScene(scene);
+        //  st.show();
+        AuthorizationInSystem au = (AuthorizationInSystem) l.getController();
+        this.authorizationInSystem = au;
+        au.setStage(st);
+    }
+
     @FXML
     public void doAutorize() throws IOException {
-        this.authorizeInSystem.openAutorizeShow();
+        this.authorizationInSystem.openAutorizeShow();
     }
 
     public void clearFlowPane() {
-        int countChildrenElements = flows.getChildren().size();
+        int countChildrenElements = flowPaneForShowListMovies.getChildren().size();
         for (int i = 0; i < countChildrenElements; i++) {
-            flows.getChildren().remove(0);
+            flowPaneForShowListMovies.getChildren().remove(0);
         }
     }
 
@@ -140,24 +146,33 @@ public class StartWindowController {
 
     @FXML
     public void showCatalog() {
-        System.out.println("zaq");
         FilmExt filmInfo;
-        if (authorizeInSystem.getStatus()) {
-            flows.setVisible(true);
+        if (authorizationInSystem.getStatus()) {
+            flowPaneForShowListMovies.setVisible(true);
             scroll.setVisible(true);
             clearFlowPane();
-            workWithUserCatalog.setCurrentCustomerAccount(authorizeInSystem.getCurrentUserInSystem());
-            for (int i = 0; i < authorizeInSystem.getCurrentUserInSystem().getCustomerMoviesList().size(); i++) {
-                System.out.println("qqq" + authorizeInSystem.getCurrentUserInSystem().getCustomerMoviesList().get(i));
-                filmInfo = searchMovies.getInformationAboutMovie(authorizeInSystem.getCurrentUserInSystem().getCustomerMoviesList().get(i));
+            workWithUserCatalog.setCurrentCustomerAccount(authorizationInSystem.getCurrentUserInSystem());
+            for (int i = 0; i < authorizationInSystem.getCurrentUserInSystem().getCustomerMoviesList().size(); i++) {
+                filmInfo = searchMovies.getInformationAboutMovie(authorizationInSystem.getCurrentUserInSystem().getCustomerMoviesList().get(i));
                 Image im = new Image(filmInfo.getData().getBigPosterUrl(), 210, 300, false, false);
                 ImageView imageView = new ImageView(im);
                 Hyperlink nameLink = new Hyperlink(filmInfo.getData().getNameRU());
+                FilmExt finalFilmInfo = filmInfo;
+                nameLink.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent actionEvent) {
+
+                        showFilmPane.setVisible(true);
+                        scroll.setVisible(false);
+                        FilmExt film = searchMovies.getInformationAboutMovie(finalFilmInfo.getData().getFilmID());
+                        showInformationAboutMovie(film);
+                        // searchMovies.getInformationAboutMovieStaff(finalFilmInfo.getData().getItems().get(finalI).getId());
+                    }
+                });
                 VBox v = new VBox(imageView, nameLink);
-                flows.getChildren().add(v);
+                flowPaneForShowListMovies.getChildren().add(v);
             }
 
-//            System.out.println("system"+authorizeInSystem.getCurrentUserInSystem().getUserLogin());
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
@@ -168,6 +183,10 @@ public class StartWindowController {
                 }
             });
         }
+    }
+
+    public void setOnActionForLink() {
+
     }
 
     public byte getCountryId(String word) {
@@ -222,7 +241,6 @@ public class StartWindowController {
 
     public void setParamsForSearch() {
         searchMovies.setKeywords(searchindString.getText());
-
         searchMovies.setCountryId(getCountryId((String) countryIdsBox.getValue()));
         searchMovies.setGenreId((byte) getGenreId((String) genreIdsBox.getValue()));
         searchMovies.setRatingFrom(Byte.parseByte(ratingFrom.getText()));
@@ -238,11 +256,11 @@ public class StartWindowController {
 
         getPremiersButton.setVisible(false);
         scroll.setVisible(true);
-        flows.setVisible(true);
+        flowPaneForShowListMovies.setVisible(true);
         returnToBackButton.setVisible(true);
-
-        flows.setHgap(30);
-        flows.setVgap(30);
+        clearFlowPane();
+        flowPaneForShowListMovies.setHgap(30);
+        flowPaneForShowListMovies.setVgap(30);
 
         int pageCount = 1;
         do {
@@ -267,7 +285,7 @@ public class StartWindowController {
                     }
                 });
                 VBox v = new VBox(imageView, nameLink);
-                flows.getChildren().add(v);
+                flowPaneForShowListMovies.getChildren().add(v);
             }
             pageCount++;
         } while (pageCount <= filmInfo.getData().getPagesCount());
@@ -276,11 +294,11 @@ public class StartWindowController {
     @FXML
     public void returnBackScene() {
         if (showFilmPane.isVisible()) {
-            flows.setVisible(true);
+            flowPaneForShowListMovies.setVisible(true);
             scroll.setVisible(true);
             showFilmPane.setVisible(false);
         } else {
-            flows.setVisible(false);
+            flowPaneForShowListMovies.setVisible(false);
         }
     }
 
@@ -292,7 +310,7 @@ public class StartWindowController {
         // Sender's email ID needs to be mentioned
         String from = "anton.durko.work@gmail.com";
         final String username = "anton.durko.work";//change accordingly
-        final String password = "";//change accordingly
+        final String password = "rasko123";//change accordingly
 
         // Assuming you are sending email through relay.jangosmtp.net
         String host = "relay.jangosmtp.net";
@@ -342,34 +360,35 @@ public class StartWindowController {
     }
 
     public void writeDataBaseInFile() throws IOException {
-        FileOutputStream fos = new FileOutputStream(new File("D:\\untitled\\src\\main\\resources\\CustomerDataBase"));
+        FileOutputStream fos = new FileOutputStream(new File("CustomerDataBaseFile"));
         ObjectOutputStream oos = new ObjectOutputStream(fos);
-        System.out.println(authorizeInSystem.getDataBase().getCustomerAccountsDataBase().size());
-        oos.writeObject(authorizeInSystem.getDataBase());
+        oos.writeObject(authorizationInSystem.getDataBase().getCustomerAccountsDataBase());
         oos.close();
     }
 
     public void readDataBaseFromFile() throws IOException, ClassNotFoundException {
-        FileInputStream fis = new FileInputStream(new File("D:\\untitled\\src\\main\\resources\\CustomerDataBase"));
+        FileInputStream fis = new FileInputStream(new File("CustomerDataBaseFile"));
         ObjectInputStream ois = new ObjectInputStream(fis);
-        AccountsDataBase data = (AccountsDataBase) ois.readObject();
+        AccountsDataBase object = (AccountsDataBase) ois.readObject();
+       // this.authorizationInSystem.getDataBase().setCustomerAccountsDataBase(data);
+        this.authorizationInSystem.setDataBase(object);
         ois.close();
     }
 
     public void showInformationAboutMovie(FilmExt film) {
-        nameLabel.setText(nameLabel.getText() + ": " + film.getData().getNameEN());
-        ageRatingLabel.setText(ageRatingLabel.getText() + ": " + film.getData().getRatingAgeLimits());
-        countriesLabel.setText(countriesLabel.getText() + ": " + film.getData().getCountry());
-        sloganLabel.setText(sloganLabel.getText() + ": " + film.getData().getSlogan());
-        movieLengthLabel.setText(movieLengthLabel.getText() + ": " + film.getData().getFilmLength());
-        genreLabel.setText(genreLabel.getText() + ": " + film.getData().getGenre());
-        budgetLabel.setText(budgetLabel.getText() + ": " + film.getData().getBudgetData().getBudget());
-        descriptionLabel.setText(descriptionLabel.getText() + ": " + film.getData().getDescription());
-        seriesInfoLabel.setText(seriesInfoLabel.getText() + ": " + film.getData().getSeriesInfo());
-        idLabel.setText(idLabel.getText() + " " + film.getData().getFilmID());
+        nameLabel.setText(film.getData().getNameEN());
+        ageRatingLabel.setText(String.valueOf(film.getData().getRatingAgeLimits()));
+        countriesLabel.setText(film.getData().getCountry());
+        sloganLabel.setText(film.getData().getSlogan());
+        movieLengthLabel.setText(film.getData().getFilmLength());
+        genreLabel.setText(film.getData().getGenre());
+        budgetLabel.setText(film.getData().getBudgetData().getBudget());
+        descriptionLabel.setText(film.getData().getDescription());
+        seriesInfoLabel.setText(String.valueOf(film.getData().getSeriesInfo()));
+        idLabel.setText(String.valueOf(film.getData().getFilmID()));
         Image im = new Image(film.getData().getBigPosterUrl());
         imageViewForHandle.setImage(im);
-        if (authorizeInSystem.getStatus())
+        if (authorizationInSystem.getStatus())
             addMovieButton.setDisable(false);
         else
             addMovieButton.setDisable(true);
@@ -377,11 +396,20 @@ public class StartWindowController {
 
     @FXML
     public void addMovieInUserCatalog() {
-        if (authorizeInSystem.getStatus()) {
-            workWithUserCatalog.setCurrentCustomerAccount(authorizeInSystem.getCurrentUserInSystem());
+        if (authorizationInSystem.getStatus()) {
+            workWithUserCatalog.setCurrentCustomerAccount(authorizationInSystem.getCurrentUserInSystem());
         }
         workWithUserCatalog.getAddingMoviesInCatalog().
-                addNewMovieInCatalog(workWithUserCatalog.getCurrentCustomerAccount(),
-                        Integer.parseInt(idLabel.getText().substring(4, idLabel.getText().length())));
+                actionInCatalog(workWithUserCatalog.getCurrentCustomerAccount(),
+                        Integer.parseInt(idLabel.getText().substring(0, idLabel.getText().length())));
+    }
+
+    public void deleteMovieFromUserCatalog() {
+        if (authorizationInSystem.getStatus()) {
+            workWithUserCatalog.setCurrentCustomerAccount(authorizationInSystem.getCurrentUserInSystem());
+        }
+        workWithUserCatalog.getDeletingMoviesFromCatalog().
+                actionInCatalog(workWithUserCatalog.getCurrentCustomerAccount(),
+                        Integer.parseInt(idLabel.getText().substring(0, idLabel.getText().length())));
     }
 }

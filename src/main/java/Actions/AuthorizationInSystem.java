@@ -3,9 +3,6 @@ package Actions;
 import DataStructure.AccountsDataBase;
 import DataStructure.CustomerAccount;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
@@ -22,7 +19,6 @@ public class AuthorizationInSystem {
 
     private  boolean authorizationStatus;
     private  Stage stage;
-    private Stage previousStage;
 
     private CustomerAccount currentUserInSystem;
 
@@ -66,13 +62,14 @@ public class AuthorizationInSystem {
     public void setStage(Stage stage){
         this.stage = stage;
     }
+    public void clearFieldsAuthorization(){
+
+    }
     public void enterInSystem() {
         if (!authorizationStatus) {
             if (dataBase.checkIsAvailableThisUser(new CustomerAccount(loginField.getText(), passwordField.getText()))) {
-                System.out.println(dataBase.getCustomerAccountsDataBase().size());
 
                 currentUserInSystem = dataBase.getUserObject(loginField.getText());
-                System.out.println(currentUserInSystem.getUserLogin());
                 authorizationStatus = true;
                 stage.close();
             }

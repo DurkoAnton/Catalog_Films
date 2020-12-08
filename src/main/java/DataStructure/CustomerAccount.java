@@ -1,10 +1,12 @@
 package DataStructure;
 
+import com.sun.prism.Image;
 import com.truedev.kinoposk.api.model.film.FilmExt;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class CustomerAccount {
+public class CustomerAccount implements Serializable {
 
     private String login;
     private String password;
@@ -21,9 +23,10 @@ public class CustomerAccount {
         customerMoviesList = new ArrayList<>();
     }
 
-    public ArrayList<Integer> getCustomerMoviesList(){
+    public ArrayList<Integer> getCustomerMoviesList() {
         return customerMoviesList;
     }
+
     public void setUserLogin(String userLogin) {
 
     }
@@ -38,5 +41,12 @@ public class CustomerAccount {
 
     public String getPasswordLogin() {
         return this.password;
+    }
+
+    public int getIndexMovieInUserCatalog(int movieId) {
+        for (int i = 0; i < customerMoviesList.size(); i++)
+            if (customerMoviesList.get(i) == movieId)
+                return i;
+        return -1;
     }
 }

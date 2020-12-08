@@ -33,4 +33,6 @@ public class AccountsDataBaseIterator implements MyIteratore {
         }
     }
     public void resetIndex(){index=-1;}
+
+    public void setList(ArrayList<CustomerAccount> database){this.database = database;}
 }
