@@ -23,10 +23,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-import javax.mail.*;
+/*import javax.mail.*;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMessage;*/
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -43,6 +43,10 @@ public class StartWindowController {
     public Button addMovieButton;
     @FXML
     public Button deleteMovieButton;
+    @FXML
+    public Label countWatchedMovies;
+    @FXML
+    public Label countMoviesInUserCatalog;
     @FXML
     private TextField searchindString;
     @FXML
@@ -98,14 +102,14 @@ public class StartWindowController {
     private AuthorizationInSystem authorizationInSystem;
 
     public StartWindowController() throws IOException, ClassNotFoundException {
-        searchMovies = new SearchMovies(null);
+        searchMovies = new SearchMovies();
         initAuthorizationController();
-       // readDataBaseFromFile();
         workWithUserCatalog = new WorkWithUserCatalog();
     }
 
     public void setStage(Stage stage) {
         this.stage = stage;
+
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
@@ -144,13 +148,25 @@ public class StartWindowController {
     public void showErrorMessage() {
     }
 
+    public void showInfoLabelsAboutCatalog() {
+        countMoviesInUserCatalog.setVisible(true);
+        countMoviesInUserCatalog.setText(String.valueOf(authorizationInSystem.getCurrentUserInSystem().getCustomerMoviesList().size()));
+
+        countWatchedMovies.setVisible(true);
+        countWatchedMovies.setText(String.valueOf(authorizationInSystem.getCurrentUserInSystem().getWatchedCustomerMoviesList().size()));
+    }
+
     @FXML
     public void showCatalog() {
         FilmExt filmInfo;
         if (authorizationInSystem.getStatus()) {
+
             flowPaneForShowListMovies.setVisible(true);
             scroll.setVisible(true);
             clearFlowPane();
+
+            showInfoLabelsAboutCatalog();
+
             workWithUserCatalog.setCurrentCustomerAccount(authorizationInSystem.getCurrentUserInSystem());
             for (int i = 0; i < authorizationInSystem.getCurrentUserInSystem().getCustomerMoviesList().size(); i++) {
                 filmInfo = searchMovies.getInformationAboutMovie(authorizationInSystem.getCurrentUserInSystem().getCustomerMoviesList().get(i));
@@ -189,40 +205,34 @@ public class StartWindowController {
 
     }
 
-    public byte getCountryId(String word) {
-        switch (word) {
-            case "Россия":
+    public byte getCountryId(int index) {
+        switch (index) {
+            case 1:
                 return 2;
-            case "СССР":
+            case 2:
                 return 13;
-            case "США":
+            case 0:
                 return 1;
-            case "Франция":
+          /*  case "Франция":
                 return 8;
-            case "Италия":
+            case "талия":
                 return 14;
-            case "Испания":
-                return 15;
+            case "спания":
+                return 15;*/
             default:
                 return 0;
         }
     }
 
-    public short getGenreId(String word) {
-        switch (word) {
-            case "Комедия":
-                return 6;
-            case "Мультфильм":
-                return 14;
-            case "Триллер":
+    public int getGenreId(int index) {
+        switch (index) {
+            case 0:
                 return 4;
-            case "Ужасы":
-                return 1;
-            case "Фантастика":
+            case 2:
                 return 2;
-            case "Аниме":
+            case 1:
                 return 1750;
-            case "Биография":
+         /*   case "Биография":
                 return 22;
             case "Вестерн":
                 return 13;
@@ -233,17 +243,19 @@ public class StartWindowController {
             case "Детский":
                 return 456;
             case "Драма":
-                return 8;
+                return 8;*/
             default:
-                return 0;
+                return -1;
         }
     }
 
     public void setParamsForSearch() {
         searchMovies.setKeywords(searchindString.getText());
-        searchMovies.setCountryId(getCountryId((String) countryIdsBox.getValue()));
-        searchMovies.setGenreId((byte) getGenreId((String) genreIdsBox.getValue()));
+        searchMovies.setCountryId(getCountryId(countryIdsBox.getItems().indexOf(countryIdsBox.getValue())));
+
+        searchMovies.setGenreId(getGenreId(genreIdsBox.getItems().indexOf(genreIdsBox.getValue())));
         searchMovies.setRatingFrom(Byte.parseByte(ratingFrom.getText()));
+
         searchMovies.setRatingTo(Byte.parseByte(ratingTo.getText()));
         searchMovies.setYearFrom(Integer.parseInt(yearFrom.getText()));
         searchMovies.setYearTo(Integer.parseInt(yearTo.getText()));
@@ -251,14 +263,15 @@ public class StartWindowController {
 
     @FXML
     public void doSearchMovies() {
-        setParamsForSearch();
         NavigatorExt filmInfo;
+        setParamsForSearch();
 
         getPremiersButton.setVisible(false);
         scroll.setVisible(true);
         flowPaneForShowListMovies.setVisible(true);
         returnToBackButton.setVisible(true);
         clearFlowPane();
+
         flowPaneForShowListMovies.setHgap(30);
         flowPaneForShowListMovies.setVgap(30);
 
@@ -302,8 +315,8 @@ public class StartWindowController {
         }
     }
 
-    @FXML
-    public void sendEmail() throws AddressException {
+
+    /*public void sendEmail() throws AddressException {
 
         String to = "customerlogin6@gmail.com";
 
@@ -357,7 +370,7 @@ public class StartWindowController {
             // throw new RuntimeException(e);
             System.out.println(e.getMessage());
         }
-    }
+    }*/
 
     public void writeDataBaseInFile() throws IOException {
         FileOutputStream fos = new FileOutputStream(new File("CustomerDataBaseFile"));
@@ -369,9 +382,9 @@ public class StartWindowController {
     public void readDataBaseFromFile() throws IOException, ClassNotFoundException {
         FileInputStream fis = new FileInputStream(new File("CustomerDataBaseFile"));
         ObjectInputStream ois = new ObjectInputStream(fis);
-        AccountsDataBase object = (AccountsDataBase) ois.readObject();
-       // this.authorizationInSystem.getDataBase().setCustomerAccountsDataBase(data);
-        this.authorizationInSystem.setDataBase(object);
+        ArrayList<CustomerAccount> object = (ArrayList<CustomerAccount>) ois.readObject();
+        this.authorizationInSystem.getDataBase().setCustomerAccountsDataBase(object);
+        this.authorizationInSystem.getDataBase().getIterator().setList(object);
         ois.close();
     }
 

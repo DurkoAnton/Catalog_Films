@@ -7,9 +7,9 @@ public class AccountsDataBaseIterator implements MyIteratore {
     private int index;
     private ArrayList<CustomerAccount> database;
 
-    public AccountsDataBaseIterator(ArrayList<CustomerAccount> database){
+    public AccountsDataBaseIterator(ArrayList<CustomerAccount> database) {
         this.database = database;
-        index=-1;
+        index = -1;
     }
 
     @Override
@@ -24,15 +24,20 @@ public class AccountsDataBaseIterator implements MyIteratore {
     }
 
     @Override
-    public boolean hasNext(){
-        if(index+1<database.size())
+    public boolean hasNext() {
+        if (index + 1 < database.size())
             return true;
         else {
             index = -1;
             return false;
         }
     }
-    public void resetIndex(){index=-1;}
 
-    public void setList(ArrayList<CustomerAccount> database){this.database = database;}
+    public void resetIndex() {
+        index = -1;
+    }
+
+    public void setList(ArrayList<CustomerAccount> database) {
+        this.database = database;
+    }
 }

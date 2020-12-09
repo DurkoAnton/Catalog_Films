@@ -1,8 +1,5 @@
 package DataStructure;
 
-import com.sun.prism.Image;
-import com.truedev.kinoposk.api.model.film.FilmExt;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -11,6 +8,8 @@ public class CustomerAccount implements Serializable {
     private String login;
     private String password;
     private ArrayList<Integer> customerMoviesList;
+    private ArrayList<Integer> watchedCustomerMoviesList;
+
     private boolean authorizeStatus;
 
     public CustomerAccount() {
@@ -21,17 +20,30 @@ public class CustomerAccount implements Serializable {
         this.login = login;
         this.password = password;
         customerMoviesList = new ArrayList<>();
+        watchedCustomerMoviesList = new ArrayList<>();
+    }
+
+    public void setCustomerMoviesList(ArrayList<Integer> moviesList) {
+        this.customerMoviesList = moviesList;
+    }
+
+    public void setWatchedCustomerMoviesList(ArrayList<Integer> moviesList) {
+        this.customerMoviesList = moviesList;
     }
 
     public ArrayList<Integer> getCustomerMoviesList() {
         return customerMoviesList;
     }
 
+    public ArrayList<Integer> getWatchedCustomerMoviesList() {
+        return watchedCustomerMoviesList;
+    }
+
     public void setUserLogin(String userLogin) {
 
     }
 
-    public void setPasswordLogin(String userPasssword) {
+    public void setUserPassword(String userPasssword) {
 
     }
 
@@ -39,7 +51,7 @@ public class CustomerAccount implements Serializable {
         return this.login;
     }
 
-    public String getPasswordLogin() {
+    public String getUserPassword() {
         return this.password;
     }
 
@@ -49,4 +61,13 @@ public class CustomerAccount implements Serializable {
                 return i;
         return -1;
     }
+
+    public CustomerAccount getStatus() {
+        return this;
+    }
+
+    public void restoreState(CustomerAccount acc) {
+        this.login = acc.getUserLogin();
+    }
+
 }

@@ -3,9 +3,9 @@ package DataStructure;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class AccountsDataBase implements Serializable{
+public class AccountsDataBase implements Serializable {
 
-    private  ArrayList<CustomerAccount> customerAccountsDataBase;
+    private ArrayList<CustomerAccount> customerAccountsDataBase;
     private AccountsDataBaseIterator accountsDataBaseIterator;
 
     public AccountsDataBase() {
@@ -29,11 +29,14 @@ public class AccountsDataBase implements Serializable{
         this.customerAccountsDataBase = customerAccountsDataBase;
     }
 
-    public AccountsDataBaseIterator getIterator(){return accountsDataBaseIterator;}
+    public AccountsDataBaseIterator getIterator() {
+        return accountsDataBaseIterator;
+    }
+
     public boolean checkIsAvailableThisLogin(CustomerAccount user) {
         accountsDataBaseIterator.resetIndex();
-        while(accountsDataBaseIterator.hasNext()){
-            if(accountsDataBaseIterator.nextObject().getUserLogin().equals(user.getUserLogin()))
+        while (accountsDataBaseIterator.hasNext()) {
+            if (accountsDataBaseIterator.nextObject().getUserLogin().equals(user.getUserLogin()))
                 return true;
         }
         return false;
@@ -41,17 +44,17 @@ public class AccountsDataBase implements Serializable{
 
     public boolean checkIsAvailableThisUser(CustomerAccount user) {
         accountsDataBaseIterator.resetIndex();
-        while(accountsDataBaseIterator.hasNext()){
-            if(accountsDataBaseIterator.nextObject().getUserLogin().equals(user.getUserLogin()))
+        while (accountsDataBaseIterator.hasNext()) {
+            if (accountsDataBaseIterator.nextObject().getUserLogin().equals(user.getUserLogin()))
                 return true;
         }
         return false;
     }
 
-    public CustomerAccount getUserObject(String userLogin){
+    public CustomerAccount getUserObject(String userLogin) {
         accountsDataBaseIterator.resetIndex();
-        while(accountsDataBaseIterator.hasNext()){
-            if(accountsDataBaseIterator.nextObject().getUserLogin().equals(userLogin))
+        while (accountsDataBaseIterator.hasNext()) {
+            if (accountsDataBaseIterator.nextObject().getUserLogin().equals(userLogin))
                 return accountsDataBaseIterator.currentObject();
         }
         return null;

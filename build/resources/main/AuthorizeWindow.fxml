@@ -6,13 +6,14 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:controller="Actions.AuthorizationInSystem" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Actions.AuthorizationInSystem">
    <children>
-      <Button layoutX="157.0" layoutY="336.0" mnemonicParsing="false" text="Создать" fx:id="createAccountButton" onAction="#addNewUser"/>
-      <Button layoutX="225.0" layoutY="336.0" mnemonicParsing="false" text="Вход" onAction="#enterInSystem"/>
+      <Button fx:id="createAccountButton" layoutX="157.0" layoutY="336.0" mnemonicParsing="false" onAction="#addNewUser" text="Создать" />
+      <Button layoutX="225.0" layoutY="336.0" mnemonicParsing="false" onAction="#enterInSystem" text="Вход" />
       <Label layoutX="143.0" layoutY="145.0" text="Label" />
       <Label layoutX="143.0" layoutY="217.0" text="Label" />
       <TextField fx:id="loginField" layoutX="291.0" layoutY="150.0" />
       <PasswordField fx:id="passwordField" layoutX="291.0" layoutY="222.0" />
+      <Button fx:id="createAccountButton1" layoutX="291.0" layoutY="336.0" mnemonicParsing="false" onAction="#exitFromSystem" text="Выход" />
    </children>
 </AnchorPane>

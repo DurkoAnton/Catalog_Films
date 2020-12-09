@@ -13,8 +13,8 @@ import java.util.List;
 public class SearchMovies {
 
     private String keywords;
-    private byte genreId;
-    private byte countryId;
+    private int genreId;
+    private int countryId;
     private byte ratingFrom;
     private byte ratingTo;
 
@@ -40,11 +40,6 @@ public class SearchMovies {
     public SearchMovies() {
     }
 
-    public SearchMovies(Stage stage) {
-
-        //this.stage = stage;
-    }
-
     public String getKeywords() {
         return keywords;
     }
@@ -53,19 +48,19 @@ public class SearchMovies {
         this.keywords = keywords;
     }
 
-    public byte getGenreId() {
+    public int getGenreId() {
         return genreId;
     }
 
-    public void setGenreId(byte genreId) {
+    public void setGenreId(int genreId) {
         this.genreId = genreId;
     }
 
-    public byte getCountryId() {
+    public int getCountryId() {
         return countryId;
     }
 
-    public void setCountryId(byte countryId) {
+    public void setCountryId(int countryId) {
         this.countryId = countryId;
     }
 
@@ -86,20 +81,19 @@ public class SearchMovies {
     }
 
     public NavigatorExt searchMovies(int pageCount) {
+
         ArrayList<Integer> countriesList = new ArrayList();
         countriesList.add((int) countryId);
-
         ArrayList<Integer> genresList = new ArrayList();
-        genresList.add((int) countryId);
-        NavigatorExt filmInfo = null;
+        genresList.add((int) genreId);
+
         KinopoiskApiService kinopoiskExtApiService = new KinopoiskApiService();
 
         if (this.keywords.length() == 0) {
-            filmInfo = kinopoiskExtApiService.getNavigator(countriesList, genresList, Order.RATING, ratingFrom, ratingTo, yearFrom, yearTo, pageCount);
+            return kinopoiskExtApiService.getNavigator(countriesList, genresList, Order.RATING, 6, 8, 1950, 2000, 1);
         }
 
-        System.out.println(filmInfo);
-        return filmInfo;
+        return null;
     }
 
     public void getInformationAboutMovieStaff(int movieId) {
@@ -129,8 +123,6 @@ public class SearchMovies {
 
     public FilmExt getInformationAboutMovie(int movieId) {
         KinopoiskApiService kinopoiskExtApiService = new KinopoiskApiService();
-        FilmExt filmInfo = new FilmExt();
-        filmInfo = kinopoiskExtApiService.getFilmInfo(movieId);
-        return filmInfo;
+        return kinopoiskExtApiService.getFilmInfo(movieId);
     }
 }
