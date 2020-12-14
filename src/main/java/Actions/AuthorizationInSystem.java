@@ -23,11 +23,14 @@ public class AuthorizationInSystem {
     private Memento oldState;
     private Stage stage;
 
+    private Button showCatalogButton;
+
     private CustomerAccount currentUserInSystem;
 
     public AuthorizationInSystem() {
         dataBase = new AccountsDataBase();
         oldState = new Memento();
+        authorizationStatus = false;
     }
 
     public Memento getOldState() {
@@ -48,6 +51,7 @@ public class AuthorizationInSystem {
 
     public AuthorizationInSystem(Stage previousStage) throws IOException {
         authorizationStatus = false;
+        // this.showCatalogButton=
         //Parent root = FXMLLoader.load(getClass().getResource("/AuthorizeWindow.fxml"));
         //Scene scene = new Scene(root);
         //stage = new Stage();
@@ -55,8 +59,9 @@ public class AuthorizationInSystem {
         //this.previousStage = previousStage;
     }
 
-    public void openAutorizeShow() {
-
+    public void openAutorizeShow(Button showCatalogButton) {
+        this.showCatalogButton = showCatalogButton;
+        System.out.println(this.showCatalogButton);
         stage.show();
     }
 
@@ -65,6 +70,7 @@ public class AuthorizationInSystem {
         if (dataBase.addNewUser(new CustomerAccount(loginField.getText(), passwordField.getText()))) {
             System.out.println(dataBase.getCustomerAccountsDataBase().size());
         }
+        clearFieldsAuthorization();
         stage.close();
     }
 
@@ -83,16 +89,38 @@ public class AuthorizationInSystem {
 
                 currentUserInSystem = dataBase.getUserObject(loginField.getText());
                 authorizationStatus = true;
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Authorization");
+                alert.setHeaderText("Enter in system");
+                alert.setContentText("Enter in system done!");
+                alert.showAndWait().ifPresent(rs -> {
+                    if (rs == ButtonType.OK) {
+                    }
+                });
                 oldState.setState(currentUserInSystem.getStatus());
                 stage.close();
-            } else
+            } else {
                 authorizationStatus = false;
+                showErrorAuthorizationInSystem();
+            }
         }
     }
 
     public void exitFromSystem() {
-        if (authorizationStatus)
+        if (authorizationStatus) {
             authorizationStatus = false;
+            //   showCatalogButton.setDisable(true);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Authorization");
+            alert.setHeaderText("Exit from system");
+            alert.setContentText("Exit from system done!");
+            alert.showAndWait().ifPresent(rs -> {
+                if (rs == ButtonType.OK) {
+                }
+            });
+            clearFieldsAuthorization();
+            this.stage.close();
+        }
     }
 
     public void initializationStartStatus() {
@@ -106,13 +134,13 @@ public class AuthorizationInSystem {
     public void showErrorAuthorizationInSystem() {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
-        alert.setHeaderText("Look, an Information Dialog");
-        alert.setContentText("I have a great message for you!");
+        alert.setHeaderText("Sign in");
+        alert.setContentText("Check your login and password");
         alert.showAndWait().ifPresent(rs -> {
-            if (rs == ButtonType.OK) {
-            }
-        });
-    }
+        if (rs == ButtonType.OK) {
+        }
+    });
+}
 
     public boolean checkCorrectInfo() {
         return false;

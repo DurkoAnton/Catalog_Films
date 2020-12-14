@@ -70,4 +70,20 @@ public class CustomerAccount implements Serializable {
         this.login = acc.getUserLogin();
     }
 
+    public boolean checkIsMovieInCatalog(int id){
+        for(int i:customerMoviesList){
+            if(i==id)
+                return true;
+        }
+        return false;
+    }
+
+    public int getWatchedIndexMovieInUserCatalog(int newMovieId) {
+        for(int i:watchedCustomerMoviesList){
+            if(i==newMovieId)
+                return i;
+        }
+        return -1;
+    }
+
 }

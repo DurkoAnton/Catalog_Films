@@ -1,10 +1,19 @@
 import Actions.AuthorizationInSystem;
+import Actions.GettingPremiers;
 import Actions.SearchMovies;
+import Actions.WorkWithCatalog.GettingRecomendations;
+import Actions.WorkWithCatalog.MarkMoviesAsWatched;
 import Actions.WorkWithUserCatalog;
 import DataStructure.AccountsDataBase;
 import DataStructure.CustomerAccount;
 import com.truedev.kinoposk.api.model.film.FilmExt;
+import com.truedev.kinoposk.api.model.navigator.KinopoiskItemType;
 import com.truedev.kinoposk.api.model.navigator.NavigatorExt;
+import com.truedev.kinoposk.api.service.KinopoiskApiService;
+import com.uwetrottmann.tmdb2.Tmdb;
+import com.uwetrottmann.tmdb2.entities.*;
+import com.uwetrottmann.tmdb2.enumerations.MediaType;
+import com.uwetrottmann.tmdb2.services.MoviesService;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -22,6 +31,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import retrofit2.Response;
 
 /*import javax.mail.*;
 import javax.mail.internet.AddressException;
@@ -29,6 +39,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;*/
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Properties;
 
 public class StartWindowController {
@@ -47,6 +58,22 @@ public class StartWindowController {
     public Label countWatchedMovies;
     @FXML
     public Label countMoviesInUserCatalog;
+    @FXML
+    public FlowPane flowPaneForCadres;
+    @FXML
+    public FlowPane flowPaneForShowRecomendationsMovies;
+    @FXML
+    public ScrollPane scroll3;
+    @FXML
+    public VBox boxInformationAboutCatalog;
+    @FXML
+    public CheckBox watchedStatusCheckBox;
+    @FXML
+    public FlowPane flowPaneForShowWatchedMovies;
+    @FXML
+    public ScrollPane scroll4;
+    public Label companiesLabels;
+    public AnchorPane basePane;
     @FXML
     private TextField searchindString;
     @FXML
@@ -101,14 +128,31 @@ public class StartWindowController {
 
     private AuthorizationInSystem authorizationInSystem;
 
+    private GettingPremiers getPremiers;
+
+    private GettingRecomendations getRecomendations;
+
+    private MarkMoviesAsWatched markMoviesAsWatched;
+
+    int indexBackScene;
+
     public StartWindowController() throws IOException, ClassNotFoundException {
         searchMovies = new SearchMovies();
         initAuthorizationController();
         workWithUserCatalog = new WorkWithUserCatalog();
+        getPremiers = new GettingPremiers();
+        getRecomendations = new GettingRecomendations();
+        markMoviesAsWatched = new MarkMoviesAsWatched();
+        readDataBaseFromFile();
     }
 
-    public void setStage(Stage stage) {
+    public void setStage(Stage stage) throws IOException {
         this.stage = stage;
+
+        //    FXMLLoader loader = new FXMLLoader(getClass().getResource("ProgressWindow.fxml"));
+
+
+        //StartWindowController st = (StartWindowController) loader.getController();
 
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
@@ -122,78 +166,265 @@ public class StartWindowController {
         });
     }
 
+    public void getRecomendaitions() throws IOException {
+        boxInformationAboutCatalog.setVisible(false);
+
+        scroll3.setVisible(true);
+        flowPaneForShowRecomendationsMovies.setVisible(true);
+
+        flowPaneForShowRecomendationsMovies.setHgap(20);
+        flowPaneForShowRecomendationsMovies.setVgap(20);
+
+        ;
+        indexBackScene = 3;
+        if (authorizationInSystem.getStatus()) {
+
+            for (int id : authorizationInSystem.getCurrentUserInSystem().getCustomerMoviesList()) {
+                MovieResultsPage resultRecomendation = getRecomendations.getRecomendations(id);
+
+                if (resultRecomendation.results.size() > 0)
+                    for (int i = 0; i < 5; i++) {
+                        if (i < resultRecomendation.results.size()) {
+
+                            Image im = new Image("https://image.tmdb.org/t/p/w500" + resultRecomendation.results.get(i).poster_path, 220, 320, false, false);
+                            ImageView imageView = new ImageView(im);
+                            Hyperlink nameLink = new Hyperlink(resultRecomendation.results.get(i).title);
+                            nameLink.setWrapText(true);
+                            int finalI1 = i;
+
+                            nameLink.setOnAction(new EventHandler<ActionEvent>() {
+                                @Override
+                                public void handle(ActionEvent actionEvent) {
+
+                                    showFilmPane.setVisible(true);
+                                    scroll.setVisible(false);
+                                    scroll3.setVisible(false);
+                                    scroll4.setVisible(false);
+                                    try {
+                                        showInforLabelAboutFilmFromTMDB(resultRecomendation.results.get(finalI1));
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+
+                            VBox v = new VBox(imageView, nameLink);
+                            v.setPrefSize(220, 320);
+                            flowPaneForShowRecomendationsMovies.getChildren().add(v);
+                        }
+                    }
+            }
+        }
+    }
+
     public void initAuthorizationController() throws IOException {
         FXMLLoader l = new FXMLLoader(getClass().getResource("AuthorizeWindow.fxml"));
         Stage st = new Stage();
         Scene scene = new Scene(l.load());
         st.setScene(scene);
-        //  st.show();
         AuthorizationInSystem au = (AuthorizationInSystem) l.getController();
         this.authorizationInSystem = au;
         au.setStage(st);
     }
 
-    @FXML
-    public void doAutorize() throws IOException {
-        this.authorizationInSystem.openAutorizeShow();
-    }
-
-    public void clearFlowPane() {
-        int countChildrenElements = flowPaneForShowListMovies.getChildren().size();
-        for (int i = 0; i < countChildrenElements; i++) {
-            flowPaneForShowListMovies.getChildren().remove(0);
+    public void markMovieAsWatched() {
+        if (watchedStatusCheckBox.isSelected()) {
+            markMoviesAsWatched.actionInCatalog(authorizationInSystem.getCurrentUserInSystem(), Integer.parseInt(idLabel.getText()));
+        } else {
+            markMoviesAsWatched.resetWachedStatus(authorizationInSystem.getCurrentUserInSystem(), Integer.parseInt(idLabel.getText()));
         }
     }
 
-    public void showErrorMessage() {
-    }
-
-    public void showInfoLabelsAboutCatalog() {
-        countMoviesInUserCatalog.setVisible(true);
-        countMoviesInUserCatalog.setText(String.valueOf(authorizationInSystem.getCurrentUserInSystem().getCustomerMoviesList().size()));
-
-        countWatchedMovies.setVisible(true);
-        countWatchedMovies.setText(String.valueOf(authorizationInSystem.getCurrentUserInSystem().getWatchedCustomerMoviesList().size()));
-    }
-
     @FXML
-    public void showCatalog() {
-        FilmExt filmInfo;
-        if (authorizationInSystem.getStatus()) {
+    public void doAutorize() throws IOException {
+        this.authorizationInSystem.openAutorizeShow(showCatalogButton);
+    }
 
-            flowPaneForShowListMovies.setVisible(true);
-            scroll.setVisible(true);
-            clearFlowPane();
+    public void clearFlowPane(FlowPane pane) {
+        int countChildrenElements = pane.getChildren().size();
+        for (int i = 0; i < countChildrenElements; i++) {
+            pane.getChildren().remove(0);
+        }
+    }
 
-            showInfoLabelsAboutCatalog();
+    public void getPremiers() throws IOException {
+        Response<MovieResultsPage> response;
+        int pageCount = 1;
+        indexBackScene = 1;
+        scroll.setVisible(true);
+        flowPaneForShowListMovies.setVisible(true);
+        // returnToBackButton.setVisible(true);
 
-            workWithUserCatalog.setCurrentCustomerAccount(authorizationInSystem.getCurrentUserInSystem());
-            for (int i = 0; i < authorizationInSystem.getCurrentUserInSystem().getCustomerMoviesList().size(); i++) {
-                filmInfo = searchMovies.getInformationAboutMovie(authorizationInSystem.getCurrentUserInSystem().getCustomerMoviesList().get(i));
-                Image im = new Image(filmInfo.getData().getBigPosterUrl(), 210, 300, false, false);
+        flowPaneForShowListMovies.setHgap(20);
+        flowPaneForShowListMovies.setVgap(20);
+
+        do {
+
+            response = getPremiers.getPremiers(pageCount);
+            if (!response.isSuccessful() || response.code() != 200)
+                break;
+
+            for (BaseMovie filmInfo : response.body().results) {
+
+                Image im = new Image("https://image.tmdb.org/t/p/w500" + filmInfo.poster_path, 220, 320, false, false);
                 ImageView imageView = new ImageView(im);
-                Hyperlink nameLink = new Hyperlink(filmInfo.getData().getNameRU());
-                FilmExt finalFilmInfo = filmInfo;
+                Hyperlink nameLink = new Hyperlink(filmInfo.title);
+                nameLink.setWrapText(true);
+
                 nameLink.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent actionEvent) {
 
                         showFilmPane.setVisible(true);
                         scroll.setVisible(false);
-                        FilmExt film = searchMovies.getInformationAboutMovie(finalFilmInfo.getData().getFilmID());
-                        showInformationAboutMovie(film);
-                        // searchMovies.getInformationAboutMovieStaff(finalFilmInfo.getData().getItems().get(finalI).getId());
+                        try {
+                            showInforLabelAboutFilmFromTMDB(filmInfo);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
                     }
                 });
+
                 VBox v = new VBox(imageView, nameLink);
+                v.setPrefSize(220, 320);
+                flowPaneForShowListMovies.getChildren().add(v);
+            }
+            pageCount++;
+        } while (response.code() == 200);
+    }
+
+    public void showInforLabelAboutFilmFromTMDB(BaseMovie baseFilm) throws IOException {
+
+        boxInformationAboutCatalog.setVisible(false);
+        Movie film = searchMovies.getInformationFromTMDB(baseFilm.id);
+        nameLabel.setText(film.title);
+
+        ageRatingLabel.setText(String.valueOf(film.status.value));
+        countriesLabel.setText(String.valueOf(film.rating));
+        sloganLabel.setText(String.valueOf(film.popularity));
+        movieLengthLabel.setText(String.valueOf(film.runtime) + " ");
+
+        genreLabel.setText("");
+
+        for (Genre genre : film.genres)
+            genreLabel.setText(genreLabel.getText() + String.valueOf(genre.name) + ", ");
+
+        premierDataLabel.setText(String.valueOf(film.release_date).substring(String.valueOf(film.release_date).length() - 4, String.valueOf(film.release_date).length()));
+
+        budgetLabel.setText("");
+        for (Country company : film.production_countries) {
+            budgetLabel.setText(budgetLabel.getText() + company.name + " ");
+        }
+
+        companiesLabels.setText("");
+
+        for (BaseCompany company : film.production_companies) {
+            companiesLabels.setText(companiesLabels.getText() + company.name + " ");
+        }
+
+        descriptionLabel.setText(film.overview);
+
+        idLabel.setText(String.valueOf(film.id));
+
+        Image im = new Image("https://image.tmdb.org/t/p/w500" + film.poster_path);
+        imageViewForHandle.setImage(im);
+
+        if (authorizationInSystem.getStatus()) {
+
+            addMovieButton.setVisible(true);
+            deleteMovieButton.setVisible(true);
+            watchedStatusCheckBox.setVisible(true);
+
+            if (authorizationInSystem.getCurrentUserInSystem().checkIsMovieInCatalog(Integer.parseInt(idLabel.getText()))) {
+                addMovieButton.setDisable(true);
+                deleteMovieButton.setDisable(false);
+            } else {
+                addMovieButton.setDisable(false);
+                deleteMovieButton.setDisable(true);
+            }
+
+            //    deleteMovieButton.setDisable(false);
+
+            if (markMoviesAsWatched.isAvailableThisMovie(authorizationInSystem.getCurrentUserInSystem().getWatchedCustomerMoviesList(), film.id))
+                watchedStatusCheckBox.setSelected(true);
+            else
+                watchedStatusCheckBox.setSelected(false);
+
+        } else {
+            watchedStatusCheckBox.setVisible(false);
+            addMovieButton.setVisible(false);
+            deleteMovieButton.setVisible(false);
+        }
+
+        returnToBackButton.setVisible(true);
+    }
+
+    public void showInfoLabelsAboutCatalog() {
+        countMoviesInUserCatalog.setText(countMoviesInUserCatalog.getText().substring(0, 8) + String.valueOf(authorizationInSystem.getCurrentUserInSystem().getCustomerMoviesList().size()));
+        countWatchedMovies.setText(countWatchedMovies.getText().substring(0, 12) + String.valueOf(authorizationInSystem.getCurrentUserInSystem().getWatchedCustomerMoviesList().size()));
+    }
+
+    @FXML
+    public void showCatalog() throws IOException {
+
+        Response<Movie> filmInfo;
+
+        if (authorizationInSystem.getStatus()) {
+
+            scroll3.setVisible(false);
+            scroll4.setVisible(false);
+
+            flowPaneForShowRecomendationsMovies.setVisible(false);
+            boxInformationAboutCatalog.setVisible(true);
+            flowPaneForShowListMovies.setVisible(true);
+
+            flowPaneForShowListMovies.setHgap(20);
+            flowPaneForShowListMovies.setVgap(20);
+
+            scroll.setVisible(true);
+            scroll3.setVisible(false);
+
+            clearFlowPane(flowPaneForShowListMovies);
+
+            showInfoLabelsAboutCatalog();
+
+            workWithUserCatalog.setCurrentCustomerAccount(authorizationInSystem.getCurrentUserInSystem());
+            indexBackScene = 1;
+            for (int i = 0; i < authorizationInSystem.getCurrentUserInSystem().getCustomerMoviesList().size(); i++) {
+                filmInfo = searchMovies.getInformationAboutMovie(authorizationInSystem.getCurrentUserInSystem().getCustomerMoviesList().get(i));
+                Image im = new Image("https://image.tmdb.org/t/p/w500" + filmInfo.body().poster_path, 220, 320, false, false);
+
+                ImageView imageView = new ImageView(im);
+                Hyperlink nameLink = new Hyperlink(filmInfo.body().title);
+                nameLink.setWrapText(true);
+
+                Response<Movie> finalFilmInfo = filmInfo;
+                nameLink.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent actionEvent) {
+
+                        showFilmPane.setVisible(true);
+                        scroll.setVisible(false);
+
+                        try {
+                            showInforLabelAboutFilmFromTMDB(finalFilmInfo.body());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+                VBox v = new VBox(imageView, nameLink);
+                v.setPrefSize(220, 320);
                 flowPaneForShowListMovies.getChildren().add(v);
             }
 
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Look, an Information Dialog");
-            alert.setContentText("I have a great message for you!");
+            alert.setTitle("Error dialog");
+            alert.setHeaderText("Error open user catalog");
+            alert.setContentText("You need to authorize in system!");
             alert.showAndWait().ifPresent(rs -> {
                 if (rs == ButtonType.OK) {
                 }
@@ -205,45 +436,34 @@ public class StartWindowController {
 
     }
 
-    public byte getCountryId(int index) {
-        switch (index) {
-            case 1:
-                return 2;
-            case 2:
-                return 13;
-            case 0:
-                return 1;
-          /*  case "Франция":
-                return 8;
-            case "талия":
-                return 14;
-            case "спания":
-                return 15;*/
-            default:
-                return 0;
-        }
-    }
-
     public int getGenreId(int index) {
         switch (index) {
-            case 0:
-                return 4;
-            case 2:
-                return 2;
-            case 1:
-                return 1750;
-         /*   case "Биография":
-                return 22;
-            case "Вестерн":
-                return 13;
-            case "Военные":
-                return 19;
-            case "Детектив":
-                return 17;
-            case "Детский":
-                return 456;
-            case "Драма":
-                return 8;*/
+            case 4:
+                return 28;
+            case 6:
+                return 16;
+            case 3:
+                return 878;
+            case 5:
+                return 12;
+            case 7:
+                return 35;
+            case 8:
+                return 80;
+            case 9:
+                return 99;
+            case 11:
+                return 10751;
+            case 10:
+                return 18;
+            case 12:
+                return 14;
+            case 13:
+                return 36;
+            case 14:
+                return 27;
+            case 15:
+                return 9648;
             default:
                 return -1;
         }
@@ -251,9 +471,9 @@ public class StartWindowController {
 
     public void setParamsForSearch() {
         searchMovies.setKeywords(searchindString.getText());
-        searchMovies.setCountryId(getCountryId(countryIdsBox.getItems().indexOf(countryIdsBox.getValue())));
+        //    searchMovies.setCountryId(getCountryId(countryIdsBox.getItems().indexOf(countryIdsBox.getValue())));
 
-        searchMovies.setGenreId(getGenreId(genreIdsBox.getItems().indexOf(genreIdsBox.getValue())));
+        searchMovies.setGenreId(getGenreId(genreIdsBox.getItems().indexOf((String) genreIdsBox.getValue())));
         searchMovies.setRatingFrom(Byte.parseByte(ratingFrom.getText()));
 
         searchMovies.setRatingTo(Byte.parseByte(ratingTo.getText()));
@@ -262,59 +482,142 @@ public class StartWindowController {
     }
 
     @FXML
-    public void doSearchMovies() {
-        NavigatorExt filmInfo;
-        setParamsForSearch();
+    public void doSearchMovies() throws IOException {
 
-        getPremiersButton.setVisible(false);
+        indexBackScene = 1;
+        scroll3.setVisible(false);
+        scroll4.setVisible(false);
+
         scroll.setVisible(true);
+
         flowPaneForShowListMovies.setVisible(true);
         returnToBackButton.setVisible(true);
-        clearFlowPane();
 
-        flowPaneForShowListMovies.setHgap(30);
-        flowPaneForShowListMovies.setVgap(30);
+        flowPaneForShowListMovies.setHgap(20);
+        flowPaneForShowListMovies.setVgap(20);
 
-        int pageCount = 1;
+        clearFlowPane(flowPaneForShowListMovies);
+        boxInformationAboutCatalog.setVisible(false);
+
+        int pageCount = 0;
+        Response<MediaResultsPage> respons;
+
         do {
-            filmInfo = searchMovies.searchMovies(pageCount);
-            System.out.println(filmInfo.getData());//[0];
-            for (int i = 0; i < filmInfo.getData().getItems().size(); i++) {
-
-                Image im = new Image(filmInfo.getData().getItems().get(i).getBigPosterUrl(), 210, 300, false, false);
-                ImageView imageView = new ImageView(im);
-                Hyperlink nameLink = new Hyperlink(filmInfo.getData().getItems().get(i).getNameRU());
-                int finalI = i;
-                NavigatorExt finalFilmInfo = filmInfo;
-                nameLink.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent actionEvent) {
-
-                        showFilmPane.setVisible(true);
-                        scroll.setVisible(false);
-                        FilmExt film = searchMovies.getInformationAboutMovie(finalFilmInfo.getData().getItems().get(finalI).getId());
-                        showInformationAboutMovie(film);
-                        // searchMovies.getInformationAboutMovieStaff(finalFilmInfo.getData().getItems().get(finalI).getId());
-                    }
-                });
-                VBox v = new VBox(imageView, nameLink);
-                flowPaneForShowListMovies.getChildren().add(v);
-            }
             pageCount++;
-        } while (pageCount <= filmInfo.getData().getPagesCount());
+            respons = searchMovies.multipleSearch(pageCount, searchindString.getText());
+
+            if (!respons.isSuccessful() || respons.code() != 200 || respons.body().results.size() == 0)
+                break;
+            MediaResultsPage response = respons.body();
+
+            int ratingFromValue;
+            int ratingToValue;
+            int yearFromValue;
+            int yearToValue;
+            int year;
+            int genreId;
+            String temp = null;
+            for (int i = 0; i < response.results.size(); i++) {
+                ratingFromValue = 0;
+                ratingToValue = 1000;
+                yearFromValue = 1800;
+                yearToValue = 2020;
+                genreId = -1;
+
+                if (response.results.get(i).media_type == MediaType.MOVIE) {
+
+                    Double rating = response.results.get(i).movie.popularity;
+
+                    if (response.results.get(i).movie.release_date != null) {
+                        temp = response.results.get(i).movie.release_date.toString();
+                        year = Integer.parseInt(temp.substring(temp.length() - 4, temp.length()));
+                    } else
+                        year = 1800;
+
+                    if (!genreIdsBox.getValue().equals("--")) {
+                        genreId = getGenreId(genreIdsBox.getItems().indexOf(genreIdsBox.getValue()));
+                    } else {
+                        if (response.results.get(i).movie.genre_ids.size() > 0)
+                            genreId = response.results.get(i).movie.genre_ids.get(0);
+                        else
+                            genreId = 0;
+                        {
+                            response.results.get(i).movie.genre_ids.add(genreId);
+                        }
+                    }
+                    if (ratingFrom.getText().length() + ratingTo.getText().length() != 0) {
+                        ratingFromValue = Integer.parseInt(ratingFrom.getText());
+                        ratingToValue = Integer.parseInt(ratingTo.getText());
+                    }
+
+                    if (yearFrom.getText().length() + yearTo.getText().length() != 0) {
+                        yearFromValue = Integer.parseInt(yearFrom.getText());
+                        yearToValue = Integer.parseInt(yearTo.getText());
+                    }
+                    if (rating >= ratingFromValue && rating <= ratingToValue && year >= yearFromValue && year <= yearToValue && response.results.get(i).movie.genre_ids.contains(genreId)) {
+
+                        Image im = new Image("https://image.tmdb.org/t/p/w500" + response.results.get(i).movie.poster_path, 220, 320, false, false);
+                        ImageView imageView = new ImageView(im);
+                        Hyperlink nameLink = new Hyperlink(response.results.get(i).movie.title);
+                        nameLink.setWrapText(true);
+                        int finalI = i;
+
+                        nameLink.setOnAction(new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent actionEvent) {
+
+                                showFilmPane.setVisible(true);
+                                scroll.setVisible(false);
+                                try {
+                                    showInforLabelAboutFilmFromTMDB(response.results.get(finalI).movie);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                        VBox v = new VBox(imageView, nameLink);
+                        v.setPrefSize(220, 320);
+
+                        flowPaneForShowListMovies.getChildren().add(v);
+                    }
+                }
+            }
+        } while (true);
+
     }
+
 
     @FXML
     public void returnBackScene() {
-        if (showFilmPane.isVisible()) {
-            flowPaneForShowListMovies.setVisible(true);
-            scroll.setVisible(true);
-            showFilmPane.setVisible(false);
-        } else {
-            flowPaneForShowListMovies.setVisible(false);
-        }
-    }
 
+        //    if (showFilmPane.isVisible()) {
+
+            /*flowPaneForShowListMovies.setVisible(true);
+            scroll.setVisible(true);
+            showFilmPane.setVisible(false);*/
+
+        showFilmPane.setVisible(false);
+        if (indexBackScene == 1) {
+            scroll.setVisible(true);
+            showFilmPane.setVisible(true);
+        }
+
+        if (indexBackScene == 2) {
+            scroll4.setVisible(true);
+            flowPaneForShowWatchedMovies.setVisible(true);
+        }
+
+        if (indexBackScene == 3) {
+            scroll3.setVisible(true);
+            flowPaneForShowRecomendationsMovies.setVisible(true);
+        }
+
+        returnToBackButton.setVisible(false);
+
+      /*  } else {
+            flowPaneForShowListMovies.setVisible(false);
+        }*/
+    }
 
     /*public void sendEmail() throws AddressException {
 
@@ -388,25 +691,6 @@ public class StartWindowController {
         ois.close();
     }
 
-    public void showInformationAboutMovie(FilmExt film) {
-        nameLabel.setText(film.getData().getNameEN());
-        ageRatingLabel.setText(String.valueOf(film.getData().getRatingAgeLimits()));
-        countriesLabel.setText(film.getData().getCountry());
-        sloganLabel.setText(film.getData().getSlogan());
-        movieLengthLabel.setText(film.getData().getFilmLength());
-        genreLabel.setText(film.getData().getGenre());
-        budgetLabel.setText(film.getData().getBudgetData().getBudget());
-        descriptionLabel.setText(film.getData().getDescription());
-        seriesInfoLabel.setText(String.valueOf(film.getData().getSeriesInfo()));
-        idLabel.setText(String.valueOf(film.getData().getFilmID()));
-        Image im = new Image(film.getData().getBigPosterUrl());
-        imageViewForHandle.setImage(im);
-        if (authorizationInSystem.getStatus())
-            addMovieButton.setDisable(false);
-        else
-            addMovieButton.setDisable(true);
-    }
-
     @FXML
     public void addMovieInUserCatalog() {
         if (authorizationInSystem.getStatus()) {
@@ -424,5 +708,47 @@ public class StartWindowController {
         workWithUserCatalog.getDeletingMoviesFromCatalog().
                 actionInCatalog(workWithUserCatalog.getCurrentCustomerAccount(),
                         Integer.parseInt(idLabel.getText().substring(0, idLabel.getText().length())));
+    }
+
+    public void showWatchedMoviesFromCatalog() throws IOException {
+        scroll4.setVisible(true);
+        scroll.setVisible(false);
+
+        flowPaneForShowWatchedMovies.setVisible(true);
+        flowPaneForShowWatchedMovies.setHgap(20);
+        flowPaneForShowWatchedMovies.setVgap(20);
+        boxInformationAboutCatalog.setVisible(false);
+        scroll3.setVisible(false);
+        clearFlowPane(flowPaneForShowWatchedMovies);
+        Response<Movie> filmInfo;
+        indexBackScene = 2;
+        for (int i = 0; i < authorizationInSystem.getCurrentUserInSystem().getWatchedCustomerMoviesList().size(); i++) {
+            filmInfo = searchMovies.getInformationAboutMovie(authorizationInSystem.getCurrentUserInSystem().getWatchedCustomerMoviesList().get(i));
+            Image im = new Image("https://image.tmdb.org/t/p/w500" + filmInfo.body().poster_path, 220, 320, false, false);
+            ImageView imageView = new ImageView(im);
+            Hyperlink nameLink = new Hyperlink(filmInfo.body().title);
+
+            nameLink.setWrapText(true);
+            Response<Movie> finalFilmInfo = filmInfo;
+            nameLink.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+
+                    showFilmPane.setVisible(true);
+                    scroll4.setVisible(false);
+
+                    try {
+                        showInforLabelAboutFilmFromTMDB(finalFilmInfo.body());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+            VBox v = new VBox(imageView, nameLink);
+            v.setPrefSize(220, 320);
+            flowPaneForShowWatchedMovies.getChildren().add(v);
+        }
+
     }
 }

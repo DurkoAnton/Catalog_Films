@@ -1,12 +1,16 @@
 package Actions;
 
-import com.truedev.kinoposk.api.model.film.FilmExt;
 import com.truedev.kinoposk.api.model.navigator.NavigatorExt;
 import com.truedev.kinoposk.api.model.navigator.filter.Order;
 import com.truedev.kinoposk.api.model.staff.StaffItem;
 import com.truedev.kinoposk.api.service.KinopoiskApiService;
-import javafx.stage.Stage;
+import com.uwetrottmann.tmdb2.Tmdb;
+import com.uwetrottmann.tmdb2.entities.MediaResultsPage;
+import com.uwetrottmann.tmdb2.entities.Movie;
+import com.uwetrottmann.tmdb2.services.MoviesService;
+import retrofit2.Response;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,8 +125,28 @@ public class SearchMovies {
 
     }
 
-    public FilmExt getInformationAboutMovie(int movieId) {
-        KinopoiskApiService kinopoiskExtApiService = new KinopoiskApiService();
-        return kinopoiskExtApiService.getFilmInfo(movieId);
+    public Response<Movie> getInformationAboutMovie(int movieId) throws IOException {
+        Tmdb tmdb = new Tmdb("40f486fd0f4155c326c4ff8bd162d9e6");
+        return  tmdb.moviesService().summary(movieId, "ru").execute();
     }
-}
+
+    public Movie getInformationFromTMDB(int id) throws IOException {
+        Tmdb tmdb = new Tmdb("40f486fd0f4155c326c4ff8bd162d9e6");
+        //    tmdb.genreService().movies();
+        // tmdb.ge
+
+
+        MoviesService moviesService = tmdb.moviesService();
+        // moviesService.
+        return moviesService.summary(id, "ru").execute().body();
+
+    }
+      public Response<MediaResultsPage> multipleSearch(int pageCount, String query) throws IOException {
+            Tmdb tmdb = new Tmdb("40f486fd0f4155c326c4ff8bd162d9e6");
+         //   tmdb.genreService().movies();
+          //tmdb.searchService().keyword("властелин",pageCount);
+     //     tmdb.moviesService().
+            return  tmdb.searchService().multi(query,pageCount,"ru","RU",false).execute();
+        }
+    }
+
