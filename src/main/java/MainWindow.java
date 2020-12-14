@@ -12,12 +12,12 @@ public class MainWindow extends Application {
 
        FXMLLoader loader = new FXMLLoader(getClass().getResource("StartWindow.fxml"));
         Scene scene = new Scene(loader.load());
-        StartWindowController st = (StartWindowController) loader.getController();
+        StartWindowController startWindowController = (StartWindowController) loader.getController();
         stage.setScene(scene);
-        st.setStage(stage);
-        st.setStage(stage);
+        startWindowController .setStage(stage);
+        startWindowController .setStage(stage);
         stage.show();
-      //  st.getPremiers();
+        startWindowController .getPremiers();
 
 
     }
