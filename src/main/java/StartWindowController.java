@@ -143,6 +143,7 @@ public class StartWindowController {
         getPremiers = new GettingPremiers();
         getRecomendations = new GettingRecomendations();
         markMoviesAsWatched = new MarkMoviesAsWatched();
+     //   genreIdsBox.setValue("--");
         readDataBaseFromFile();
     }
 
@@ -301,7 +302,7 @@ public class StartWindowController {
         nameLabel.setText(film.title);
 
         ageRatingLabel.setText(String.valueOf(film.status.value));
-        countriesLabel.setText(String.valueOf(film.rating));
+        countriesLabel.setText(String.valueOf(film.budget));
         sloganLabel.setText(String.valueOf(film.popularity));
         movieLengthLabel.setText(String.valueOf(film.runtime) + " ");
 
@@ -481,9 +482,50 @@ public class StartWindowController {
         searchMovies.setYearTo(Integer.parseInt(yearTo.getText()));
     }
 
+    public boolean checkInputedParams() {
+        if (yearFrom.getText().length() != 0) {
+            if (!yearFrom.getText().matches("[0-9]+"))
+                return false;
+            else
+                if(Integer.parseInt(yearFrom.getText())<=0)
+                    return false;
+        }
+
+        if (yearTo.getText().length() != 0) {
+            if (!yearTo.getText().matches("[0-9]+"))
+                return false;
+            else
+            if(Integer.parseInt(yearTo.getText())>2020)
+                return false;
+        }
+
+        if (ratingFrom.getText().length() != 0) {
+            if (!ratingFrom.getText().matches("[0-9.,]+"))
+                return false;
+        }
+
+        if (ratingTo.getText().length() != 0) {
+            if (!ratingTo.getText().matches("[0-9.,]+"))
+                return false;
+
+        }
+        return true;
+    }
+
     @FXML
     public void doSearchMovies() throws IOException {
 
+        if (!checkInputedParams()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error dialog");
+            alert.setHeaderText("Error searching information");
+            alert.setContentText("You need to check parameters");
+            alert.showAndWait().ifPresent(rs -> {
+                if (rs == ButtonType.OK) {
+                }
+            });
+            return;
+        }
         indexBackScene = 1;
         scroll3.setVisible(false);
         scroll4.setVisible(false);
@@ -510,8 +552,8 @@ public class StartWindowController {
                 break;
             MediaResultsPage response = respons.body();
 
-            int ratingFromValue;
-            int ratingToValue;
+            double ratingFromValue;
+            double ratingToValue;
             int yearFromValue;
             int yearToValue;
             int year;
@@ -546,8 +588,9 @@ public class StartWindowController {
                         }
                     }
                     if (ratingFrom.getText().length() + ratingTo.getText().length() != 0) {
-                        ratingFromValue = Integer.parseInt(ratingFrom.getText());
-                        ratingToValue = Integer.parseInt(ratingTo.getText());
+
+                        ratingFromValue = Double.parseDouble(ratingFrom.getText());
+                        ratingToValue = Double.parseDouble(ratingTo.getText());
                     }
 
                     if (yearFrom.getText().length() + yearTo.getText().length() != 0) {

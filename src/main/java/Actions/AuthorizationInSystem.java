@@ -2,7 +2,6 @@ package Actions;
 
 import DataStructure.AccountsDataBase;
 import DataStructure.CustomerAccount;
-import DataStructure.Memento;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -20,7 +19,6 @@ public class AuthorizationInSystem {
     private AccountsDataBase dataBase;
 
     private boolean authorizationStatus;
-    private Memento oldState;
     private Stage stage;
 
     private Button showCatalogButton;
@@ -29,13 +27,9 @@ public class AuthorizationInSystem {
 
     public AuthorizationInSystem() {
         dataBase = new AccountsDataBase();
-        oldState = new Memento();
         authorizationStatus = false;
     }
 
-    public Memento getOldState() {
-        return oldState;
-    }
 
     public AccountsDataBase getDataBase() {
         return dataBase;
@@ -67,11 +61,21 @@ public class AuthorizationInSystem {
 
     @FXML
     public void addNewUser() {
-        if (dataBase.addNewUser(new CustomerAccount(loginField.getText(), passwordField.getText()))) {
-            System.out.println(dataBase.getCustomerAccountsDataBase().size());
-        }
+        if (checkCorrectInfo())
+            if (dataBase.addNewUser(new CustomerAccount(loginField.getText(), passwordField.getText()))) {
+                System.out.println(dataBase.getCustomerAccountsDataBase().size());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Authorization");
+                alert.setHeaderText("Registration in system");
+                alert.setContentText("Registration in system done!");
+                alert.showAndWait().ifPresent(rs -> {
+                    if (rs == ButtonType.OK) {
+                    }
+                });
+                stage.close();
+            }
         clearFieldsAuthorization();
-        stage.close();
+
     }
 
     public void setStage(Stage stage) {
@@ -97,7 +101,6 @@ public class AuthorizationInSystem {
                     if (rs == ButtonType.OK) {
                     }
                 });
-                oldState.setState(currentUserInSystem.getStatus());
                 stage.close();
             } else {
                 authorizationStatus = false;
@@ -137,12 +140,23 @@ public class AuthorizationInSystem {
         alert.setHeaderText("Sign in");
         alert.setContentText("Check your login and password");
         alert.showAndWait().ifPresent(rs -> {
-        if (rs == ButtonType.OK) {
-        }
-    });
-}
+            if (rs == ButtonType.OK) {
+            }
+        });
+    }
 
     public boolean checkCorrectInfo() {
-        return false;
+        if (passwordField.getText().length()<6) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Sign up");
+            alert.setContentText("Password should contains only letters and numbers");
+            alert.showAndWait().ifPresent(rs -> {
+                if (rs == ButtonType.OK) {
+                }
+            });
+            return false;
+        }
+        return true;
     }
 }

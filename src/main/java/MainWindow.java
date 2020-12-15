@@ -15,7 +15,6 @@ public class MainWindow extends Application {
         StartWindowController startWindowController = (StartWindowController) loader.getController();
         stage.setScene(scene);
         startWindowController .setStage(stage);
-        startWindowController .setStage(stage);
         stage.show();
         startWindowController .getPremiers();
 

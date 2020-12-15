@@ -37,7 +37,7 @@
                  <font>
                      <Font name="Century Gothic" size="14.0" /></font>
              </Label>
-             <Label fx:id="countriesLabel" layoutX="566.0" layoutY="193.0" prefHeight="5.0" prefWidth="503.0" text="" >
+             <Label fx:id="countriesLabel" layoutX="580.0" layoutY="193.0" prefHeight="5.0" prefWidth="503.0" text="" >
                  <font>
                      <Font name="Century Gothic" size="14.0" /></font>
              </Label>
@@ -89,7 +89,7 @@
                  <font>
                      <Font name="Century Gothic Bold" size="14.0" />
                  </font></Label>
-             <Label fx:id="countriesLabel1" layoutX="504.0" layoutY="300.0" prefHeight="17.0" prefWidth="487.0" text="Компании-создатели">
+             <Label fx:id="countriesLabel1" layoutX="505.0" layoutY="300.0" prefHeight="17.0" prefWidth="487.0" text="Компании-создатели">
                  <font>
                      <Font name="Century Gothic Bold" size="14.0" />
                  </font></Label>
@@ -97,7 +97,7 @@
                  <font>
                      <Font name="Century Gothic Bold" size="14.0" />
                  </font></Label>
-             <Label fx:id="budgetLabel1" layoutX="503.0" layoutY="193.0" prefHeight="17.0" prefWidth="469.0" text="Бюджет:">
+             <Label fx:id="budgetLabel1" layoutX="503.0" layoutY="193.0" prefHeight="17.0" prefWidth="469.0" text="Бюджет, $:">
                  <font>
                      <Font name="Century Gothic Bold" size="14.0" />
                  </font></Label>
@@ -123,7 +123,7 @@
                  <font>
                      <Font name="Century Gothic" size="14.0" />
                  </font></Label>
-            <ChoiceBox fx:id="genreIdsBox" prefHeight="25.0" prefWidth="126.0" >
+            <ChoiceBox fx:id="genreIdsBox" prefHeight="25.0" prefWidth="126.0" value="--" >
              <items>
                  <FXCollections fx:factory="observableArrayList">
                      <String fx:value="--" />
